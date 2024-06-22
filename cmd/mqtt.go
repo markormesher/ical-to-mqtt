@@ -46,7 +46,7 @@ func (w *MqttClientWrapper) publish(topic string, payload any) {
 		realPayload = string(jsonString)
 	}
 
-	topic = fmt.Sprint("%s/%s", w.topicPrefix, topic)
+	topic = fmt.Sprintf("%s/%s", w.topicPrefix, topic)
 	l.Debug("Publishing message", "topic", topic, "payload", realPayload)
 	if token := w.client.Publish(topic, 0, false, realPayload); token.Wait() && token.Error() != nil {
 		panic(fmt.Errorf("Failed to publish MQTT message: %w", token.Error()))

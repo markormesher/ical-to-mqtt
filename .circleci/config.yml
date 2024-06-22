@@ -83,6 +83,5 @@ workflows:
             - setup
       - publish:
           requires:
-            - setup
-            # - lint
-            # - build
+            - lint
+            - build

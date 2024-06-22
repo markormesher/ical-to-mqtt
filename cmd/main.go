@@ -14,9 +14,7 @@ import (
 var jsonHandler = slog.NewJSONHandler(os.Stdout, nil)
 var l = slog.New(jsonHandler)
 
-var now = time.Now()
-
-var recurrenceLimit = now.AddDate(0, 6, 0)
+var recurrenceLimit = time.Now().AddDate(0, 6, 0)
 
 type PublishEvent struct {
 	Uid         string    `json:"uid"`
@@ -126,6 +124,8 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 }
 
 func doUpdate(settings *Settings) {
+	now := time.Now()
+
 	mqttClient, err := setupMqttClient(*settings)
 	if err != nil {
 		l.Error("Failed to setup MQTT client")

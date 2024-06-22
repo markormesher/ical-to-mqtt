@@ -59,12 +59,12 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Build Docker image
+          name: Build container image
           command: |
             docker build /tmp/app -f Containerfile -t ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
             docker image ls
       - run:
-          name: Maybe publish Docker image
+          name: Maybe publish container image
           command: |
             if ! git describe --exact-match HEAD > /dev/null 2>&1; then echo "Not on tagged commit - nothing to do"; exit 0; fi
             echo "${GHCR_PUBLISH_TOKEN}" | docker login ghcr.io -u markormesher --password-stdin

@@ -1,7 +1,7 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: ~/app
+  working_directory: /app
   docker:
     - image: cimg/go:1.22.3
 
@@ -10,6 +10,9 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run:
+          name: Save version
+          command: git describe --tags | tee .version
       - restore_cache:
           keys:
             - go-mod-v1-{{ .Branch }}
@@ -51,6 +54,22 @@ jobs:
           command: |
             go build -mod vendor -o ./build/ ./cmd/*
 
+  publish:
+    <<: *defaults
+    docker:
+      - image: gcr.io/kaniko-project/executor:v1.23.1-debug
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build and publish image
+          command: |
+            export VERSION=$(cat .version)
+            /kaniko/executor \
+              --context dir:///app \
+              --dockerfile Containerfile \
+              --destination ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:${VERSION}
+
 workflows:
   version: 2
   main:
@@ -71,3 +90,9 @@ workflows:
               only: /.*/
           requires:
             - lint
+      - publish:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - build

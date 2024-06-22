@@ -51,45 +51,25 @@ jobs:
           command: |
             go build -mod vendor -o ./build/ ./cmd/*
 
-  pre-publish:
-    <<: *defaults
-    docker:
-      - image: alpine/git
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Set container destination
-          command: |
-            touch .destination
-            if git describe --exact-match HEAD > /dev/null 2>&1; then
-              echo "--destination ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)" | tee .destination
-            else
-              echo "--no-push" | tee .destination
-            fi
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-
   publish:
     <<: *defaults
-    docker:
-      - image: gcr.io/kaniko-project/executor:v1.23.1-debug
-        entrypoint: /busybox/sh
     steps:
       - attach_workspace:
           at: .
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.12
       - run:
-          name: Build and publish image
+          name: Build Docker image
           command: |
-            AUTH=$(echo -n "markormesher:${GHCR_PUBLISH_TOKEN}" | base64)
-            echo '{"auths":{"ghcr.io":{"auth":"'${AUTH}'"}}}' > /kaniko/.docker/config.json
-            /kaniko/executor \
-              --context dir:///tmp/app \
-              --ignore-path /tmp/app \
-              --dockerfile Containerfile \
-              $(cat .destination)
+            docker build . -t ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
+            docker image ls
+      - run:
+          name: Maybe publish Docker image
+          command: |
+            if ! git describe --exact-match HEAD > /dev/null 2>&1; then echo "Not on tagged commit - nothing to do"; exit 0; fi
+            echo "${GHCR_PUBLISH_TOKEN}" | docker login ghcr.io -u markormesher --password-stdin
+            docker push ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
 
 workflows:
   version: 2
@@ -102,11 +82,7 @@ workflows:
       - build:
           requires:
             - setup
-      - pre-publish:
-          requires:
-            - setup
       - publish:
           requires:
-            - pre-publish
             - lint
             - build

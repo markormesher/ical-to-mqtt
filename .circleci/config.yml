@@ -61,6 +61,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
+            ls -laR /
             docker build Containerfile -t ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
             docker image ls
       - run:

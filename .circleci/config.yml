@@ -58,11 +58,10 @@ jobs:
           at: .
       - setup_remote_docker:
           docker_layer_caching: true
-          version: 20.10.12
       - run:
           name: Build Docker image
           command: |
-            docker build /tmp/app/Containerfile -t ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
+            docker build Containerfile -t ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)
             docker image ls
       - run:
           name: Maybe publish Docker image

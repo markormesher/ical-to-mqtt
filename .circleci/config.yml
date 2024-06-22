@@ -1,7 +1,7 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: ~/app
+  working_directory: /tmp/app
   docker:
     - image: cimg/go:1.22.3
 
@@ -10,10 +10,6 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run:
-          name: Save publish details
-          command: |
-            git describe --tags | tee .version
       - restore_cache:
           keys:
             - go-mod-v1-{{ .Branch }}
@@ -55,6 +51,27 @@ jobs:
           command: |
             go build -mod vendor -o ./build/ ./cmd/*
 
+  pre-publish:
+    <<: *defaults
+    docker:
+      - image: alpine/git
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Set container destination
+          command: |
+            touch .destination
+            if git describe --exact-match HEAD > /dev/null 2>&1; then
+              echo "--destination ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:$(git describe --tags)" | tee .destination
+            else
+              echo "--no-push" | tee .destination
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
   publish:
     <<: *defaults
     docker:
@@ -65,36 +82,30 @@ jobs:
       - run:
           name: Build and publish image
           command: |
-            export VERSION=$(cat .version)
-            echo "{\"auths\":{\"ghcr.io\":{\"auth\":\"$(echo "mormesher:${GHCR_PUBLISH_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+            AUTH=$(echo -n "markormesher:${GHCR_PUBLISH_TOKEN}" | base64)
+            echo '{"auths":{"ghcr.io":{"auth":"'${AUTH}'"}}}' > /kaniko/.docker/config.json
             /kaniko/executor \
-              --context dir://~/app \
+              --context dir:///tmp/app \
+              --ignore-path /tmp/app \
               --dockerfile Containerfile \
-              --destination ghcr.io/markormesher/${CIRCLE_PROJECT_REPONAME}:${VERSION}
+              $(cat .destination)
 
 workflows:
   version: 2
   main:
     jobs:
       - setup:
-          filters:
-            tags:
-              only: /.*/
       - lint:
-          filters:
-            tags:
-              only: /.*/
           requires:
             - setup
       - build:
-          filters:
-            tags:
-              only: /.*/
           requires:
-            - lint
+            - setup
+      - pre-publish:
+          requires:
+            - setup
       - publish:
-          filters:
-            tags:
-              only: /.*/
           requires:
+            - pre-publish
+            - lint
             - build

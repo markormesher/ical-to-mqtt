@@ -126,7 +126,6 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 }
 
 func doUpdate(settings *Settings) {
-
 	mqttClient, err := setupMqttClient(*settings)
 	if err != nil {
 		l.Error("Failed to setup MQTT client")

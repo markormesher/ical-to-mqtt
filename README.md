@@ -1,3 +1,5 @@
+![CircleCI](https://img.shields.io/circleci/build/github/markormesher/ical-to-mqtt)
+
 # iCal to MQTT
 
 This project fetches events from one or more iCal links (.ics) and publishes them to MQTT.

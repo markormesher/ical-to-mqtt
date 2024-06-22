@@ -1,0 +1,58 @@
+version: 2.1
+
+defaults: &defaults
+  working_directory: ~/app
+  docker:
+    - image: golang:1.22.3
+
+jobs:
+  setup:
+    <<: *defaults
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Lint
+          command: |
+            gofmt -l .
+            test -z $(gofmt -l .)
+
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build
+          command: |
+            go build -o ./build/ ./cmd/*
+
+workflows:
+  version: 2
+  build_test:
+    jobs:
+      - setup:
+          filters:
+            tags:
+              only: /.*/
+      - lint:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - setup
+      - build:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - lint

@@ -21,7 +21,7 @@ Configuration is via environment variables:
 
 Each event object takes the following form:
 
-```json
+```jsonc
 {
   "uid": "abcd1234", // event ID
   "start": "2023-03-14T00:00:00.000Z", // ISO timestamp

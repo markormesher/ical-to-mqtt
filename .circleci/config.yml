@@ -76,6 +76,7 @@ jobs:
     <<: *defaults
     docker:
       - image: gcr.io/kaniko-project/executor:v1.23.1-debug
+        entrypoint: /busybox/sh
     steps:
       - attach_workspace:
           at: .

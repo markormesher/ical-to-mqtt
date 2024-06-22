@@ -10,6 +10,17 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ .Branch }}
+            - go-mod-v1
+      - run:
+          name: Download dependencies
+          command: go mod vendor
+      - save_cache:
+          key: go-mod-v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - vendor
       - persist_to_workspace:
           root: .
           paths:
@@ -34,11 +45,11 @@ jobs:
       - run:
           name: Build
           command: |
-            go build -o ./build/ ./cmd/*
+            go build -mod vendor -o ./build/ ./cmd/*
 
 workflows:
   version: 2
-  build_test:
+  main:
     jobs:
       - setup:
           filters:

@@ -16,7 +16,7 @@ Configuration is via environment variables:
 
 ## MQTT Topics
 
-- `${prefix}/_meta/last_seen` - RFC3339 timestamp of when the program most last ran.
+- `${prefix}/_meta/last_seen` - RFC3339 timestamp of when the program last ran.
 - `${prefix}/state/all_events` - JSON array of all events (if enabled).
 - `${prefix}/state/today_events` - JSON array of events that include today.
 - `${prefix}/state/today_and_future_events` - JSON array of events that include today or are in the future.

@@ -28,7 +28,14 @@ type PublishEvent struct {
 }
 
 func fetchEvents(url string) ([]PublishEvent, error) {
-	resp, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build download request: %w", err)
+	}
+
+	req.Header.Add("user-agent", "curl/0.0.0")
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to download calendar: %w", err)
 	}

@@ -119,6 +119,10 @@ func parseCalendar(reader io.Reader) ([]Event, error) {
 	for scanner.Scan() {
 		line := strings.TrimRight(scanner.Text(), "\r")
 
+		if len(line) == 0 {
+			continue
+		}
+
 		if line[0] == ' ' || line[0] == '\u0020' {
 			// this is a continuation of the current line, so append it and do nothing else
 			if len(lines) == 0 {

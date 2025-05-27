@@ -10,7 +10,7 @@ RUN go build -o ./build/main ./cmd/...
 
 # ---
 
-FROM gcr.io/distroless/base-debian12@sha256:1aae189e3baecbb4044c648d356ddb75025b2ba8d14cdc9c2a19ba784c90bfb9
+FROM gcr.io/distroless/base-debian12@sha256:cef75d12148305c54ef5769e6511a5ac3c820f39bf5c8a4fbfd5b76b4b8da843
 WORKDIR /app
 
 LABEL image.registry=ghcr.io

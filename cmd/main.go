@@ -37,12 +37,12 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to download calendar: %w", err)
+		return nil, fmt.Errorf("failed to download calendar: %w", err)
 	}
 
 	events, err := parseCalendar(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse calendar: %w", err)
+		return nil, fmt.Errorf("failed to parse calendar: %w", err)
 	}
 
 	publishEvents := make([]PublishEvent, 0)
@@ -59,7 +59,7 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 		startProp := event.GetSingleProperty("DTSTART")
 		start, err := startProp.ParseAsDate()
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse event start time: %w", err)
+			return nil, fmt.Errorf("failed to parse event start time: %w", err)
 		}
 
 		endProp := event.GetSingleProperty("DTEND")
@@ -69,7 +69,7 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 		} else {
 			end, err = endProp.ParseAsDate()
 			if err != nil {
-				return nil, fmt.Errorf("Failed to parse event end time: %w", err)
+				return nil, fmt.Errorf("failed to parse event end time: %w", err)
 			}
 		}
 
@@ -94,7 +94,7 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 		} else {
 			parsedRrule, err := rrule.StrToRRule(rruleProp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("Failed to parse recurrence rule: %w", err)
+				return nil, fmt.Errorf("failed to parse recurrence rule: %w", err)
 			}
 
 			rruleSet := rrule.Set{}
@@ -104,7 +104,7 @@ func fetchEvents(url string) ([]PublishEvent, error) {
 			for _, exDateProp := range event.GetProperties("EXDATE") {
 				exDate, err := exDateProp.ParseAsDate()
 				if err != nil {
-					return nil, fmt.Errorf("Failed to parse exdate as date: %w", err)
+					return nil, fmt.Errorf("failed to parse exdate as date: %w", err)
 				}
 				rruleSet.ExDate(*exDate)
 			}
@@ -150,9 +150,7 @@ func doUpdate(settings *Settings) {
 			l.Error("Failed to fetch events from calendar", "url", url)
 			panic(err)
 		}
-		for _, e := range events {
-			allEvents = append(allEvents, e)
-		}
+		allEvents = append(allEvents, events...)
 	}
 
 	sort.Slice(allEvents, func(i, j int) bool {
@@ -189,10 +187,10 @@ func main() {
 	}
 
 	if settings.UpdateInterval <= 0 {
-		l.Info("Running once then exiting because update interval is <= 0")
+		l.Info("running once then exiting because update interval is <= 0")
 		doUpdate(settings)
 	} else {
-		l.Info("Running forever", "interval", settings.UpdateInterval)
+		l.Info("running forever", "interval", settings.UpdateInterval)
 		for {
 			doUpdate(settings)
 			time.Sleep(time.Duration(settings.UpdateInterval * int(time.Second)))

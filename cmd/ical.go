@@ -126,7 +126,7 @@ func parseCalendar(reader io.Reader) ([]Event, error) {
 		if line[0] == ' ' || line[0] == '\u0020' {
 			// this is a continuation of the current line, so append it and do nothing else
 			if len(lines) == 0 {
-				return nil, fmt.Errorf("Encountered a continuation line as the first element")
+				return nil, fmt.Errorf("encountered a continuation line as the first element")
 			}
 			lines[len(lines)-1] += line[1:]
 		} else {

@@ -32,7 +32,7 @@ func getSettings() (*Settings, error) {
 	}
 	updateInterval, err := strconv.Atoi(updateIntervalStr)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse update interval as an integer: %w", err)
+		return nil, fmt.Errorf("could not parse update interval as an integer: %w", err)
 	}
 
 	publishHistoricEventsStr := os.Getenv("PUBLISH_HISTORIC_EVENTS")

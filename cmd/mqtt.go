@@ -13,7 +13,7 @@ type MqttClientWrapper struct {
 }
 
 func setupMqttClient(settings Settings) (*MqttClientWrapper, error) {
-	l.Info("Connecting to MQTT server...")
+	l.Info("connecting to MQTT server...")
 	mqttOpts := mqtt.NewClientOptions()
 	mqttOpts.AddBroker(settings.MqttConnectionString)
 
@@ -34,21 +34,21 @@ func (w *MqttClientWrapper) publish(topic string, payload any) {
 	}
 
 	var realPayload string
-	switch payload.(type) {
+	switch payload := payload.(type) {
 	case string:
-		realPayload = payload.(string)
+		realPayload = payload
 
 	default:
 		jsonString, err := json.Marshal(payload)
 		if err != nil {
-			panic(fmt.Errorf("Failed to marshall MQTT payload: %w", err))
+			panic(fmt.Errorf("failed to marshall MQTT payload: %w", err))
 		}
 		realPayload = string(jsonString)
 	}
 
 	topic = fmt.Sprintf("%s/%s", w.topicPrefix, topic)
-	l.Debug("Publishing message", "topic", topic, "payload", realPayload)
+	l.Debug("publishing message", "topic", topic, "payload", realPayload)
 	if token := w.client.Publish(topic, 0, false, realPayload); token.Wait() && token.Error() != nil {
-		panic(fmt.Errorf("Failed to publish MQTT message: %w", token.Error()))
+		panic(fmt.Errorf("failed to publish MQTT message: %w", token.Error()))
 	}
 }

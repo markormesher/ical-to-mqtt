@@ -1,4 +1,3 @@
-![CircleCI](https://img.shields.io/circleci/build/github/markormesher/ical-to-mqtt)
 
 # iCal to MQTT
 
